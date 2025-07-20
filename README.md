@@ -6,7 +6,7 @@ git clone https://github.com/yogesh-modgekar/AuthFlow-MaterialUI.git
 ## Features
 
 Fast Vite bundling
-Utility-first styling with Tailwind CSS
+Utility-first styling with MaterialUI
 Component-based architecture
 
 ## Technologies Used:
