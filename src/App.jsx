@@ -1,0 +1,156 @@
+
+import './App.css'
+import React, { useState } from "react";
+import {
+  TextField,
+  Button,
+  Container,
+  Typography,
+  Box,
+  RadioGroup,
+  Radio,
+  FormControlLabel,
+  Snackbar,
+} from "@mui/material";
+
+const fakeOtp = "123456";
+
+const pages = {
+  SIGNUP: "SIGNUP",
+  SIGNUP_VERIFY: "SIGNUP_VERIFY",
+  LOGIN: "LOGIN",
+  LOGIN_VERIFY: "LOGIN_VERIFY",
+};
+
+function App() {
+
+  const [page, setPage] = useState(pages.SIGNUP);
+  const [formData, setFormData] = useState({
+    name: "",
+    mobile: "",
+    email: "",
+    password: "",
+    otpMobile: "",
+    otpEmail: "",
+    loginUser: "",
+    loginPassword: "",
+    loginOtp: "",
+    loginOtpMethod: "mobile",
+  });
+  const [error, setError] = useState("");
+  const [snack, setSnack] = useState(false);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const validateSignup = () => {
+    const { name, mobile, email, password } = formData;
+    if (!name || !mobile || !email || !password) return "All fields are required";
+    if (!/^\d{10}$/.test(mobile)) return "Invalid mobile number";
+    if (!/.+@.+\..+/.test(email)) return "Invalid email format";
+    return "";
+  };
+
+  const handleSignup = () => {
+    const err = validateSignup();
+    if (err) return setError(err);
+    setPage(pages.SIGNUP_VERIFY);
+  };
+
+  const handleSignupVerify = () => {
+    if (formData.otpMobile === fakeOtp && formData.otpEmail === fakeOtp) {
+      document.cookie = "authToken=token123; path=/";
+      setSnack(true);
+      setPage(pages.LOGIN);
+    } else {
+      setError("Invalid OTPs");
+    }
+  };
+
+  const handleLogin = () => {
+    const { loginUser, loginPassword } = formData;
+    if (!loginUser || !loginPassword) return setError("Credentials required");
+    setPage(pages.LOGIN_VERIFY);
+  };
+
+  const handleLoginVerify = () => {
+    if (formData.loginOtp === fakeOtp) {
+      document.cookie = "authToken=token123; path=/";
+      setSnack(true);
+    } else {
+      setError("Invalid OTP");
+    }
+  };
+
+  return (
+     <Container maxWidth="sm">
+      <Box mt={5}>
+        <Typography variant="h4" mb={2}>
+          {page.replace("_", " ")}
+        </Typography>
+
+        {page === pages.SIGNUP && (
+          <>
+            <TextField fullWidth label="Name" name="name" onChange={handleChange} margin="normal" />
+            <TextField fullWidth label="Mobile" name="mobile" onChange={handleChange} margin="normal" />
+            <TextField fullWidth label="Email" name="email" onChange={handleChange} margin="normal" />
+            <TextField fullWidth label="Password" type="password" name="password" onChange={handleChange} margin="normal" />
+            <Button variant="contained" onClick={handleSignup} fullWidth sx={{ mt: 2 }}>
+              Signup
+            </Button>
+          </>
+        )}
+
+        {page === pages.SIGNUP_VERIFY && (
+          <>
+            <TextField fullWidth label="Mobile OTP" name="otpMobile" onChange={handleChange} margin="normal" />
+            <TextField fullWidth label="Email OTP" name="otpEmail" onChange={handleChange} margin="normal" />
+            <Button variant="contained" onClick={handleSignupVerify} fullWidth sx={{ mt: 2 }}>
+              Verify OTPs
+            </Button>
+          </>
+        )}
+
+        {page === pages.LOGIN && (
+          <>
+            <TextField fullWidth label="Email or Mobile" name="loginUser" onChange={handleChange} margin="normal" />
+            <TextField fullWidth label="Password" type="password" name="loginPassword" onChange={handleChange} margin="normal" />
+            <Button variant="contained" onClick={handleLogin} fullWidth sx={{ mt: 2 }}>
+              Login
+            </Button>
+          </>
+        )}
+
+        {page === pages.LOGIN_VERIFY && (
+          <>
+            <RadioGroup row name="loginOtpMethod" value={formData.loginOtpMethod} onChange={handleChange}>
+              <FormControlLabel value="mobile" control={<Radio />} label="Mobile OTP" />
+              <FormControlLabel value="email" control={<Radio />} label="Email OTP" />
+            </RadioGroup>
+            <TextField fullWidth label="Enter OTP" name="loginOtp" onChange={handleChange} margin="normal" />
+            <Button variant="contained" onClick={handleLoginVerify} fullWidth sx={{ mt: 2 }}>
+              Verify Login
+            </Button>
+          </>
+        )}
+
+        {error && (
+          <Typography color="error" mt={2}>
+            {error}
+          </Typography>
+        )}
+
+        <Snackbar
+          open={snack}
+          autoHideDuration={3000}
+          message="Authentication successful"
+          onClose={() => setSnack(false)}
+        />
+      </Box>
+    </Container>
+  )
+}
+
+export default App
